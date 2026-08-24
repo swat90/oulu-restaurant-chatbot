@@ -53,7 +53,7 @@ User (natural language)
 ## ✨ Key Features
 
 ### 🤖 Agentic AI
-- LangChain tool-calling agent with **Gemini 2.0 Flash** as primary LLM
+- LangChain tool-calling agent with **Gemini 3.5 Flash** as primary LLM
 - Agent decides which tool(s) to call based on user intent
 - Multi-turn conversation with memory across the session
 - Handles ambiguous requests ("book me a table for tonight")
