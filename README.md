@@ -60,7 +60,7 @@ User (natural language)
 
 ### 🗄️ Real Database Integration
 - **Supabase PostgreSQL** — all bookings and orders persist in a real database
-- Atomic seat updates via PostgreSQL RPC functions (no race conditions)
+- Concurrent booking protection via PostgreSQL RPC functions — prevents double-booking
 - Unique booking references (`OUL-XXXXX`) and order references (`ORD-XXXXX`)
 - Real-time availability checking — slot capacity tracked per restaurant per time
 
