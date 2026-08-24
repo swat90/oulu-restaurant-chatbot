@@ -286,7 +286,7 @@ st.markdown("""
 # Tech pills
 st.markdown("""
 <div class="tech-row">
-  <span class="tech-pill">🤖 Gemini 2.0 Flash</span>
+  <span class="tech-pill">🤖 Gemini 3.5 Flash</span>
   <span class="tech-pill">⛓️ LangChain Agent</span>
   <span class="tech-pill">🗄️ Supabase PostgreSQL</span>
   <span class="tech-pill">🔍 pgvector RAG</span>
