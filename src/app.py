@@ -277,7 +277,7 @@ st.markdown("""
       Oulu Restaurant AI
     </h1>
     <p style="margin:0;color:#6b7280;font-size:0.88rem;">
-      Powered by Gemini 2.0 Flash · LangChain · Supabase · pgvector
+      Powered by Gemini 3.5 Flash · LangChain · Supabase · pgvector
     </p>
   </div>
 </div>
