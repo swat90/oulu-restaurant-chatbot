@@ -1,0 +1,70 @@
+# GitHub Actions CI — runs in parallel with CircleCI
+# CircleCI: test + lint + smoke test
+# GitHub Actions: weekly slot refresh + integration checks
+#
+# Why both?
+# CircleCI runs on every push (fast feedback on code changes)
+# GitHub Actions runs scheduled jobs (DB maintenance, slot refresh)
+
+name: CI & Scheduled Maintenance
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 4 * * 1'   # Every Monday 4am — refresh time slots
+
+jobs:
+  # ── Quick test on PR/push ───────────────────────────────────────────────────
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Run tests
+        run: pytest tests/ -v --tb=short
+        env:
+          SUPABASE_URL: "https://mock.supabase.co"
+          SUPABASE_KEY: "mock-key"
+          OPENAI_API_KEY: "mock-key"
+
+  # ── Refresh time slots every Monday ────────────────────────────────────────
+  refresh_slots:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Refresh time slots for next 30 days
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        run: |
+          python - << 'PYEOF'
+          import sys, pathlib
+          sys.path.insert(0, "src")
+          from dotenv import load_dotenv
+          load_dotenv()
+          import database as db
+
+          restaurants = db.get_all_restaurants()
+          for r in restaurants:
+              db.seed_time_slots(r["id"], days_ahead=30)
+              print(f"Refreshed slots for {r['name']}")
+          print("Done!")
+          PYEOF

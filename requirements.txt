@@ -1,0 +1,33 @@
+# Core
+streamlit==1.35.0
+python-dotenv==1.0.1
+resend>=0.8.0       # email sending — free 100/day at resend.com
+
+# Supabase
+supabase==2.4.2
+
+# LangChain 0.3.x — all latest, fully compatible with each other
+langchain>=0.3.0
+langchain-core>=0.3.0
+langchain-community>=0.3.0
+
+# LLM — Gemini primary
+langchain-google-genai>=2.0.0
+google-generativeai>=0.8.0
+
+# LLM — OpenAI fallback
+langchain-openai>=0.2.0
+openai>=1.35.0
+
+# Embeddings
+sentence-transformers==2.7.0
+
+# Testing
+pytest==8.2.2
+pytest-cov==5.0.0
+pytest-mock==3.14.0
+
+# Code quality
+black==24.4.2
+isort==5.13.2
+flake8==7.0.0

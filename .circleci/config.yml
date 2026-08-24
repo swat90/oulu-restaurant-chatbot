@@ -1,0 +1,173 @@
+# CircleCI configuration
+# Runs on every push to any branch
+# On push to main → also triggers Streamlit deployment
+#
+# Pipeline stages:
+#   1. test     — run pytest (all branches)
+#   2. lint     — check code quality (all branches)
+#   3. deploy   — notify Streamlit (main branch only)
+#
+# Setup:
+#   1. Go to app.circleci.com → sign in with GitHub
+#   2. Click "Set Up Project" → select this repo
+#   3. Add environment variables in Project Settings → Environment Variables:
+#      SUPABASE_URL, SUPABASE_KEY (for integration tests)
+#      STREAMLIT_APP_URL (your Streamlit Cloud app URL, for smoke test)
+
+version: 2.1
+
+orbs:
+  python: circleci/python@2.1.1
+
+# ── Reusable commands ──────────────────────────────────────────────────────────
+commands:
+  install_deps:
+    description: "Install Python dependencies with caching"
+    steps:
+      - python/install-packages:
+          pkg-manager: pip
+          pip-dependency-file: requirements.txt
+          cache-version: v1
+
+# ── Jobs ───────────────────────────────────────────────────────────────────────
+jobs:
+
+  # ── Job 1: Run unit tests ────────────────────────────────────────────────────
+  test:
+    docker:
+      - image: cimg/python:3.11
+    resource_class: small
+    steps:
+      - checkout
+      - install_deps
+
+      - run:
+          name: Download NLTK data
+          command: |
+            python -c "import nltk; nltk.download('punkt', quiet=True)"
+
+      - run:
+          name: Run unit tests
+          command: |
+            pytest tests/ \
+              -v \
+              --tb=short \
+              --junitxml=test-results/junit.xml \
+              --cov=src \
+              --cov-report=xml:coverage.xml \
+              --cov-report=term-missing \
+              -p no:warnings
+          environment:
+            # Dummy env vars so imports don't fail during testing
+            # Real values are mocked in tests via monkeypatch
+            SUPABASE_URL: "https://mock.supabase.co"
+            SUPABASE_KEY: "mock-key"
+            OPENAI_API_KEY: "mock-key"
+
+      - store_test_results:
+          path: test-results
+
+      - store_artifacts:
+          path: coverage.xml
+          destination: coverage
+
+  # ── Job 2: Lint and code quality ─────────────────────────────────────────────
+  lint:
+    docker:
+      - image: cimg/python:3.11
+    resource_class: small
+    steps:
+      - checkout
+      - run:
+          name: Install linting tools
+          command: pip install flake8 black isort
+
+      - run:
+          name: Check formatting (black)
+          command: |
+            black --check src/ tests/ \
+              --line-length 100 \
+              --exclude __pycache__
+          # Remove --check to auto-fix instead of fail
+
+      - run:
+          name: Check import order (isort)
+          command: |
+            isort --check-only src/ tests/ \
+              --profile black
+
+      - run:
+          name: Lint (flake8)
+          command: |
+            flake8 src/ tests/ \
+              --max-line-length=100 \
+              --exclude=__pycache__ \
+              --ignore=E501,W503,E203
+
+  # ── Job 3: Smoke test — check deployed app is alive ──────────────────────────
+  smoke_test:
+    docker:
+      - image: cimg/python:3.11
+    resource_class: small
+    steps:
+      - checkout
+      - run:
+          name: Install requests
+          command: pip install requests
+
+      - run:
+          name: Smoke test — check Streamlit app is reachable
+          command: |
+            python - << 'PYEOF'
+            import requests, sys, time
+
+            url = "${STREAMLIT_APP_URL}"
+            if not url or "YOUR" in url:
+                print("STREAMLIT_APP_URL not set — skipping smoke test")
+                sys.exit(0)
+
+            print(f"Checking {url} ...")
+            # Retry up to 3 times (Streamlit may be waking from sleep)
+            for attempt in range(3):
+                try:
+                    resp = requests.get(url, timeout=30)
+                    if resp.status_code == 200:
+                        print(f"✅ App is live! Status: {resp.status_code}")
+                        sys.exit(0)
+                    else:
+                        print(f"Attempt {attempt+1}: status {resp.status_code}")
+                except Exception as e:
+                    print(f"Attempt {attempt+1}: {e}")
+                time.sleep(10)
+
+            print("❌ App not reachable after 3 attempts")
+            sys.exit(1)
+            PYEOF
+
+# ── Workflows ──────────────────────────────────────────────────────────────────
+workflows:
+
+  # Runs on every push to every branch
+  test_and_lint:
+    jobs:
+      - test
+      - lint
+
+  # Runs only on push to main branch — after tests pass, check deployment
+  deploy_check:
+    jobs:
+      - test:
+          filters:
+            branches:
+              only: main
+      - lint:
+          filters:
+            branches:
+              only: main
+      - smoke_test:
+          requires:
+            - test
+            - lint
+          filters:
+            branches:
+              only: main
