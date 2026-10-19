@@ -89,12 +89,14 @@ def review_with_claude(diff: str, pr_info: dict) -> dict:
     )
 
     message = client.messages.create(
-        model="claude-opus-4-5",
-        max_tokens=4000,
+        model="claude-haiku-4-5",
+        max_tokens=4096,
         messages=[{"role": "user", "content": prompt}],
     )
 
     raw = message.content[0].text.strip()
+    if message.stop_reason == "max_tokens":
+        print("⚠️ Response hit max_tokens — output is truncated")
 
     # Strip markdown code fences if Claude wrapped in ```json
     if raw.startswith("```"):
@@ -103,7 +105,24 @@ def review_with_claude(diff: str, pr_info: dict) -> dict:
             raw = raw[4:]
         raw = raw.strip()
 
-    return json.loads(raw)
+    # Keep only the outermost {...} in case there's text around it
+    start, end = raw.find("{"), raw.rfind("}")
+    candidate = raw[start:end + 1] if start != -1 and end > start else raw
+
+    try:
+        return json.loads(candidate)
+    except json.JSONDecodeError as e:
+        print(f"⚠️ Could not parse AI response as JSON: {e}\nRaw output:\n{raw[:500]}")
+        return {
+            "verdict": "COMMENT",
+            "summary": "AI reviewer returned a malformed response.",
+            "issues": [],
+            "positives": [],
+            "review_body": (
+                "⚠️ The AI reviewer's response could not be parsed.\n\n"
+                f"Partial output:\n```\n{raw[:800]}\n```"
+            ),
+        }
 
 # ── Post review to GitHub ─────────────────────────────────────────────────────
 def post_review(verdict: str, body: str):
