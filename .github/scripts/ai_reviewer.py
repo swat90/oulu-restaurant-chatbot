@@ -88,7 +88,7 @@ def review_with_claude(diff: str, pr_info: dict) -> dict:
         diff=diff,
     )
 
-        message = client.messages.create(
+    message = client.messages.create(
         model="claude-haiku-4-5",
         max_tokens=4096,
         messages=[{"role": "user", "content": prompt}],
