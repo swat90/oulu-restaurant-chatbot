@@ -186,6 +186,13 @@ SAMPLE_REVIEWS = [
     {"restaurant_id": 5, "reviewer_name": "Hassan A",   "stars": 5, "language": "en", "text_translated": "Best prawn curry I've had outside Sri Lanka. Kottu roti is a must-try. Staff are very welcoming.", "ctx_recommended": "prawn curry, kottu roti"},
     {"restaurant_id": 5, "reviewer_name": "Riikka P",   "stars": 4, "language": "fi", "text_translated": "Good Sri Lankan food. Onion bhaji as starter was crispy and tasty. Prawn curry had great flavor. Will visit again.", "ctx_recommended": "onion bhaji, prawn curry"},
     {"restaurant_id": 5, "reviewer_name": "Omar S",     "stars": 3, "language": "en", "text_translated": "Average experience. Food was okay, not outstanding. Service was slow during lunch hour. The kottu roti was the highlight.", "ctx_recommended": "kottu roti"},
+
+    # Aura Himalaya
+    {"restaurant_id": 6, "reviewer_name": "Janne K",    "stars": 5, "language": "fi", "text_translated": "The Nepal Top Sizzler was spectacular — it arrived flaming at the table! Unique Indo-Chinese flavours you won't find anywhere else in Oulu. Excellent value lunch buffet too.", "ctx_recommended": "Nepal Top Sizzler, lunch buffet"},
+    {"restaurant_id": 6, "reviewer_name": "Aisha M",    "stars": 5, "language": "en", "text_translated": "Best butter chicken I've had in Oulu! The Himalayan spice blend is so different from regular Indian restaurants. Staff were warm and friendly. Will definitely return.", "ctx_recommended": "butter chicken, Khursani Kukhura"},
+    {"restaurant_id": 6, "reviewer_name": "Ville H",    "stars": 4, "language": "fi", "text_translated": "Really interesting combination of Chinese and Nepali food. The Royal Prawn Sizzler was excellent. Lunch buffet is good value at under €12. Central location near the market square.", "ctx_recommended": "Royal Prawn Sizzler, lunch buffet"},
+    {"restaurant_id": 6, "reviewer_name": "Fatima R",   "stars": 5, "language": "en", "text_translated": "Paneer Chilli was incredible — proper Indo-Chinese fusion. The sizzler platters are a must-try. Cosy atmosphere and very friendly service. One of the best restaurants in central Oulu.", "ctx_recommended": "Paneer Chilli, Nepal Top Sizzler"},
+    {"restaurant_id": 6, "reviewer_name": "Tero A",     "stars": 4, "language": "fi", "text_translated": "Good food with interesting flavours. Closed on Sundays which is a bit inconvenient. The Khursani Kukhura was very spicy but tasty. Good option for a weekday lunch.", "ctx_recommended": "Khursani Kukhura, lunch buffet"},
 ]
 
 # ── Main seed function ─────────────────────────────────────────────────────────

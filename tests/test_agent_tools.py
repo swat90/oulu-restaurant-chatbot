@@ -147,30 +147,60 @@ class TestMakeBookingTool:
 
 class TestSearchRestaurantsTool:
 
+    # Shared mock data including Aura Himalaya (Indo-Chinese, Saaristonkatu 5)
+    MOCK_RESTAURANTS = [
+        {"id": 1, "name": "Punjabi Taste", "cuisine": "Pakistani",
+         "features": ["halal", "vegan"], "price_range": "€10-25",
+         "rating": 4.9, "address": "Harjapäänkatu 33", "description": "Authentic Pakistani cuisine"},
+        {"id": 2, "name": "Sauraha", "cuisine": "Nepali",
+         "features": ["vegetarian"], "price_range": "€12-28",
+         "rating": 4.5, "address": "Addr 2", "description": "Nepali food"},
+        {"id": 6, "name": "Aura Himalaya", "cuisine": "Indo-Chinese / Nepali",
+         "features": ["lunch buffet", "halal", "vegetarian", "sizzler"],
+         "price_range": "€9-26", "rating": 4.6,
+         "address": "Saaristonkatu 5, 90100 Oulu",
+         "description": "Indo-Chinese restaurant blending Himalayan spices with Chinese wok cooking. "
+                        "Famous for the flaming Nepal Top Sizzler and daily lunch buffet."},
+    ]
+
     def test_search_by_feature(self):
         with patch("database.get_all_restaurants") as mock_all:
-            mock_all.return_value = [
-                {"id": 1, "name": "Punjabi Taste", "cuisine": "Pakistani",
-                 "features": ["halal", "vegan"], "price_range": "€10-25",
-                 "rating": 4.9, "address": "Addr 1", "description": "Great food"},
-                {"id": 2, "name": "Sauraha", "cuisine": "Nepali",
-                 "features": ["vegetarian"], "price_range": "€12-28",
-                 "rating": 4.5, "address": "Addr 2", "description": "Nepali food"},
-            ]
+            mock_all.return_value = self.MOCK_RESTAURANTS
             from agent import search_restaurants
             result = search_restaurants.func("vegan")
             assert "Punjabi Taste" in result
 
+    def test_search_aura_himalaya_by_cuisine(self):
+        """Aura Himalaya should appear when searching for Indo-Chinese or Himalayan."""
+        with patch("database.get_all_restaurants") as mock_all:
+            mock_all.return_value = self.MOCK_RESTAURANTS
+            from agent import search_restaurants
+            result = search_restaurants.func("Indo-Chinese")
+            assert "Aura Himalaya" in result
+
+    def test_search_aura_himalaya_lunch_buffet(self):
+        """Searching 'lunch buffet' should surface Aura Himalaya."""
+        with patch("database.get_all_restaurants") as mock_all:
+            mock_all.return_value = self.MOCK_RESTAURANTS
+            from agent import search_restaurants
+            result = search_restaurants.func("lunch buffet")
+            assert "Aura Himalaya" in result
+
     def test_search_returns_all_when_no_match(self):
         with patch("database.get_all_restaurants") as mock_all:
-            mock_all.return_value = [
-                {"id": 1, "name": "Punjabi Taste", "cuisine": "Pakistani",
-                 "features": [], "price_range": "€10-25", "rating": 4.9,
-                 "address": "Addr 1", "description": "Food"},
-            ]
+            mock_all.return_value = self.MOCK_RESTAURANTS
             from agent import search_restaurants
             result = search_restaurants.func("xyz_not_found")
+            # Falls back to showing all restaurants
             assert "Punjabi Taste" in result
+
+    def test_all_restaurants_returned_on_empty_query(self):
+        """Empty/generic query should return the full list including new restaurants."""
+        with patch("database.get_all_restaurants") as mock_all:
+            mock_all.return_value = self.MOCK_RESTAURANTS
+            from agent import search_restaurants
+            result = search_restaurants.func("restaurant")
+            assert "Aura Himalaya" in result or "Punjabi Taste" in result
 
 
 class TestManageBookingTool:

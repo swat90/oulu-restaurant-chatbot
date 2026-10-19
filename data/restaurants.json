@@ -109,6 +109,28 @@
       "capacity": 45,
       "features": ["halal", "vegetarian", "vegan", "takeaway", "dine-in", "delivery"],
       "description": "Indian and Sri Lankan fusion restaurant. Known for kottu roti, prawn curry, and excellent vegan options. Wolt delivery available."
+    },
+    {
+      "id": 6,
+      "name": "Aura Himalaya",
+      "cuisine": "Indo-Chinese / Nepali",
+      "address": "Saaristonkatu 5, 90100 Oulu",
+      "phone": "046 845 3323",
+      "email": "info@aurahimalaya.fi",
+      "price_range": "€9–26",
+      "rating": 4.6,
+      "opening_hours": {
+        "monday":    "10:30–21:00",
+        "tuesday":   "10:30–21:00",
+        "wednesday": "10:30–21:00",
+        "thursday":  "10:30–21:00",
+        "friday":    "10:30–22:00",
+        "saturday":  "12:00–22:00",
+        "sunday":    "closed"
+      },
+      "capacity": 40,
+      "features": ["halal", "vegetarian", "lunch buffet", "takeaway", "dine-in", "sizzler"],
+      "description": "Indo-Chinese restaurant blending Himalayan spices with Chinese wok cooking. Recipes from Himalayan family kitchens — spice blends ground in-house. Famous for the flaming Nepal Top Sizzler and daily lunch buffet."
     }
   ],
   "menu_items": [
@@ -139,6 +161,16 @@
     {"id": 21, "restaurant_id": 5, "category": "Main",      "name": "Kottu Roti",            "price": 14.90, "vegetarian": false, "vegan": false, "gluten_free": false, "spice_level": 3, "description": "Sri Lankan street food — shredded flatbread stir-fried with eggs and vegetables"},
     {"id": 22, "restaurant_id": 5, "category": "Main",      "name": "Prawn Curry",           "price": 18.90, "vegetarian": false, "vegan": false, "gluten_free": true,  "spice_level": 3, "description": "King prawns in coconut and tomato curry sauce"},
     {"id": 23, "restaurant_id": 5, "category": "Main",      "name": "Vegan Thali",           "price": 16.90, "vegetarian": true,  "vegan": true,  "gluten_free": false, "spice_level": 2, "description": "Selection of 5 vegan dishes with rice and bread"},
-    {"id": 24, "restaurant_id": 5, "category": "Starter",   "name": "Onion Bhaji",           "price": 7.50,  "vegetarian": true,  "vegan": true,  "gluten_free": false, "spice_level": 2, "description": "Crispy fried onion fritters with mint chutney"}
+    {"id": 24, "restaurant_id": 5, "category": "Starter",   "name": "Onion Bhaji",
+           "price": 7.50,  "vegetarian": true,  "vegan": true,  "gluten_free": false, "spice_level": 2, "description": "Crispy fried onion fritters with mint chutney"},
+
+    {"id": 25, "restaurant_id": 6, "category": "Starter",   "name": "Vegetable Spring Rolls", "price": 7.90,  "vegetarian": true,  "vegan": true,  "gluten_free": false, "spice_level": 1, "description": "Crispy wok-fried rolls with seasoned vegetables and Himalayan spices"},
+    {"id": 26, "restaurant_id": 6, "category": "Main",      "name": "Nepal Top Sizzler",      "price": 25.90, "vegetarian": false, "vegan": false, "gluten_free": true,  "spice_level": 3, "description": "The house signature — mixed meats served flaming on a sizzling iron plate"},
+    {"id": 27, "restaurant_id": 6, "category": "Main",      "name": "Butter Chicken",         "price": 17.50, "vegetarian": false, "vegan": false, "gluten_free": true,  "spice_level": 2, "description": "Tandoori chicken in a rich tomato-butter sauce with Himalayan spice blend"},
+    {"id": 28, "restaurant_id": 6, "category": "Main",      "name": "Khursani Kukhura",       "price": 17.50, "vegetarian": false, "vegan": false, "gluten_free": true,  "spice_level": 4, "description": "Spicy Nepali chilli chicken — a fiery classic from the Himalayan kitchen"},
+    {"id": 29, "restaurant_id": 6, "category": "Main",      "name": "Royal Prawn Sizzler",    "price": 24.90, "vegetarian": false, "vegan": false, "gluten_free": true,  "spice_level": 3, "description": "King prawns wok-tossed in garlic and chilli sauce on a sizzling plate"},
+    {"id": 30, "restaurant_id": 6, "category": "Main",      "name": "Paneer Chilli",          "price": 15.90, "vegetarian": true,  "vegan": false, "gluten_free": true,  "spice_level": 3, "description": "Indo-Chinese style cottage cheese tossed with peppers and chilli sauce"},
+    {"id": 31, "restaurant_id": 6, "category": "Buffet",    "name": "Lunch Buffet",           "price": 11.90, "vegetarian": false, "vegan": false, "gluten_free": false, "spice_level": 2, "description": "Six freshly cooked dishes daily — Mon–Fri 10:30–15:00, Sat 12:00–16:00"},
+    {"id": 32, "restaurant_id": 6, "category": "Express",   "name": "Aura Express Bowl",      "price": 8.90,  "vegetarian": false, "vegan": false, "gluten_free": false, "spice_level": 2, "description": "Build-your-own bowl — choose base, protein, and sauce"}
   ]
 }
