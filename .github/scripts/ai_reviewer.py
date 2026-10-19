@@ -90,7 +90,7 @@ def review_with_claude(diff: str, pr_info: dict) -> dict:
 
     message = client.messages.create(
         model="claude-opus-4-5",
-        max_tokens=1500,
+        max_tokens=4000,
         messages=[{"role": "user", "content": prompt}],
     )
 

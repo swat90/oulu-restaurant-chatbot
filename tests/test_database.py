@@ -232,19 +232,29 @@ class TestMenu:
         assert veg_items[0]["name"] == "Palak Paneer"
 
     def test_search_menu_vegan_filter(self, mock_supabase):
-        # Mock the entire chain to return 1 result
+        # Use spec-free MagicMock so any chain depth returns the same execute result.
+        # database.search_menu_items builds a dynamic filter chain whose exact depth
+        # depends on which kwargs are passed, so we configure the terminal .data at
+        # the top-level mock and let MagicMock propagate it automatically.
         mock_execute = MagicMock()
         mock_execute.data = [
             {"id": 3, "name": "Dal Makhani", "vegan": True, "vegetarian": True},
         ]
-        # Any chain of calls on the mock returns something with .execute()
-        mock_supabase.table.return_value             .select.return_value             .ilike.return_value             .lte.return_value             .eq.return_value             .eq.return_value             .execute.return_value = mock_execute
-        # Also handle single eq call chain
-        mock_supabase.table.return_value             .select.return_value             .ilike.return_value             .lte.return_value             .execute.return_value = mock_execute
+        # Every method call on the table mock returns a new MagicMock whose
+        # .execute() returns mock_execute — covers any chain length.
+        chain = MagicMock()
+        chain.execute.return_value = mock_execute
+        # Make every chained call (select/ilike/eq/lte/…) return the same chain mock
+        chain.select.return_value = chain
+        chain.ilike.return_value = chain
+        chain.eq.return_value = chain
+        chain.lte.return_value = chain
+        chain.gte.return_value = chain
+        chain.filter.return_value = chain
+        mock_supabase.table.return_value = chain
 
         import database
         results = database.search_menu_items("dal", vegan=True)
-        # Just check it returns a list without error
         assert isinstance(results, list)
 
 
