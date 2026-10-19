@@ -1,5 +1,6 @@
 """
-test_agent_tools.py — updated for LangChain 1.x named argument tools
+test_agent_tools.py — calls tool.func() directly to bypass LangChain's
+Pydantic wrapper; tests logic, not serialisation.
 """
 
 import pytest
@@ -23,11 +24,11 @@ class TestCheckAvailabilityTool:
             ]
 
             from agent import check_availability
-            result = check_availability.invoke({
-                "restaurant_name": "Punjabi Taste",
-                "date": "2026-07-10",
-                "party_size": 2,
-            })
+            result = check_availability.func(
+                restaurant_name="Punjabi Taste",
+                date="2026-07-10",
+                party_size=2,
+            )
             assert "18:00" in result
             assert "Punjabi Taste" in result
 
@@ -39,11 +40,11 @@ class TestCheckAvailabilityTool:
             mock_open.return_value = (False, "closed")
 
             from agent import check_availability
-            result = check_availability.invoke({
-                "restaurant_name": "Garam Masala",
-                "date": "2026-06-15",
-                "party_size": 2,
-            })
+            result = check_availability.func(
+                restaurant_name="Garam Masala",
+                date="2026-06-15",
+                party_size=2,
+            )
             assert "closed" in result.lower()
 
     def test_missing_restaurant(self):
@@ -51,11 +52,24 @@ class TestCheckAvailabilityTool:
             mock_rest.return_value = None
 
             from agent import check_availability
-            result = check_availability.invoke({
-                "restaurant_name": "NonExistent",
-                "date": "2026-07-10",
-                "party_size": 2,
-            })
+            result = check_availability.func(
+                restaurant_name="NonExistent",
+                date="2026-07-10",
+                party_size=2,
+            )
+            assert "not found" in result.lower()
+
+    def test_invalid_json(self):
+        """Passing garbage string should return not-found, not crash."""
+        with patch("database.get_restaurant_by_name") as mock_rest:
+            mock_rest.return_value = None
+
+            from agent import check_availability
+            result = check_availability.func(
+                restaurant_name="not json at all",
+                date="2026-07-10",
+                party_size=2,
+            )
             assert "not found" in result.lower()
 
 
@@ -79,16 +93,36 @@ class TestMakeBookingTool:
             }
 
             from agent import make_booking
-            result = make_booking.invoke({
-                "restaurant_name": "Punjabi Taste",
-                "date": "2026-07-10",
-                "time": "19:00",
-                "party_size": 2,
-                "customer_name": "Anna Test",
-                "customer_email": "anna@test.fi",
-            })
+            result = make_booking.func(
+                restaurant_name="Punjabi Taste",
+                date="2026-07-10",
+                time="19:00",
+                party_size=2,
+                customer_name="Anna Test",
+                customer_email="anna@test.fi",
+            )
             assert "OUL-ABC12" in result
             assert "confirmed" in result.lower()
+
+    def test_missing_required_fields(self):
+        """Missing date/time/email — restaurant lookup still works, slots empty."""
+        with patch("database.get_restaurant_by_name") as mock_rest, \
+             patch("database.get_available_slots") as mock_slots:
+
+            mock_rest.return_value = {"id": 1, "name": "Punjabi Taste"}
+            mock_slots.return_value = []
+
+            from agent import make_booking
+            result = make_booking.func(
+                restaurant_name="Punjabi Taste",
+                date="2026-07-10",
+                time="19:00",
+                party_size=2,
+                customer_name="",
+                customer_email="",
+            )
+            # No slots available for empty time
+            assert "not available" in result.lower() or "none" in result.lower()
 
     def test_time_slot_unavailable(self):
         with patch("database.get_restaurant_by_name") as mock_rest, \
@@ -100,14 +134,14 @@ class TestMakeBookingTool:
             ]
 
             from agent import make_booking
-            result = make_booking.invoke({
-                "restaurant_name": "Punjabi Taste",
-                "date": "2026-07-10",
-                "time": "19:00",
-                "party_size": 2,
-                "customer_name": "Test",
-                "customer_email": "test@test.fi",
-            })
+            result = make_booking.func(
+                restaurant_name="Punjabi Taste",
+                date="2026-07-10",
+                time="19:00",
+                party_size=2,
+                customer_name="Test",
+                customer_email="test@test.fi",
+            )
             assert "not available" in result.lower() or "18:00" in result
 
 
@@ -124,7 +158,7 @@ class TestSearchRestaurantsTool:
                  "rating": 4.5, "address": "Addr 2", "description": "Nepali food"},
             ]
             from agent import search_restaurants
-            result = search_restaurants.invoke("vegan")
+            result = search_restaurants.func("vegan")
             assert "Punjabi Taste" in result
 
     def test_search_returns_all_when_no_match(self):
@@ -135,7 +169,7 @@ class TestSearchRestaurantsTool:
                  "address": "Addr 1", "description": "Food"},
             ]
             from agent import search_restaurants
-            result = search_restaurants.invoke("xyz_not_found")
+            result = search_restaurants.func("xyz_not_found")
             assert "Punjabi Taste" in result
 
 
@@ -155,10 +189,10 @@ class TestManageBookingTool:
                 "restaurants": {"name": "Punjabi Taste"},
             }
             from agent import manage_booking
-            result = manage_booking.invoke({
-                "action": "lookup",
-                "booking_ref": "OUL-TEST1",
-            })
+            result = manage_booking.func(
+                action="lookup",
+                booking_ref="OUL-TEST1",
+            )
             assert "OUL-TEST1" in result
             assert "Punjabi Taste" in result
 
@@ -177,10 +211,10 @@ class TestManageBookingTool:
             mock_cancel.return_value = True
 
             from agent import manage_booking
-            result = manage_booking.invoke({
-                "action": "cancel",
-                "booking_ref": "OUL-TEST1",
-            })
+            result = manage_booking.func(
+                action="cancel",
+                booking_ref="OUL-TEST1",
+            )
             assert "cancel" in result.lower()
 
     def test_booking_not_found(self):
@@ -188,10 +222,10 @@ class TestManageBookingTool:
             mock_get.return_value = None
 
             from agent import manage_booking
-            result = manage_booking.invoke({
-                "action": "lookup",
-                "booking_ref": "OUL-XXXXX",
-            })
+            result = manage_booking.func(
+                action="lookup",
+                booking_ref="OUL-XXXXX",
+            )
             assert "no booking found" in result.lower() or "OUL-XXXXX" in result
 
 

@@ -1,0 +1,72 @@
+name: 🤖 AI Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    # Only review PRs targeting main/master
+    branches: [main, master]
+
+jobs:
+  ai-review:
+    name: Claude Code Review
+    runs-on: ubuntu-latest
+    # Don't run on PRs from bots or dependabot
+    if: github.actor != 'dependabot[bot]' && github.actor != 'github-actions[bot]'
+
+    permissions:
+      pull-requests: write   # needed to post review + approve/request changes
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install anthropic requests
+
+      - name: Run AI review
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GH_TOKEN:          ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PR_NUMBER:         ${{ github.event.pull_request.number }}
+        run: python .github/scripts/ai_reviewer.py
+
+      # Optional: add a label showing AI reviewed this PR
+      - name: Label PR as AI-reviewed
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            try {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                labels: ['ai-reviewed']
+              });
+            } catch(e) {
+              // Label might not exist yet — create it first
+              try {
+                await github.rest.issues.createLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: 'ai-reviewed',
+                  color: '7c3aed',
+                  description: 'Reviewed by Claude AI'
+                });
+                await github.rest.issues.addLabels({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.payload.pull_request.number,
+                  labels: ['ai-reviewed']
+                });
+              } catch(e2) { console.log('Label creation failed:', e2.message); }
+            }
